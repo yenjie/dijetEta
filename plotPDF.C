@@ -7,14 +7,20 @@
 #include <TString.h>
 #include <TLine.h>
 #include <TBox.h>
+#include <TGraphAsymmErrors.h>
 
 void normalize(TH1D *h)
 {
-   double intergal = h->Integral(1,h->GetNbinsX());
+//   double intergal = h->Integral(1,h->GetNbinsX());
+   double integral=0;
    for (int i=1;i<=h->GetNbinsX();i++)
    {
-      double val = h->GetBinContent(i)/intergal/h->GetBinWidth(i);
-      //double valErr = h->GetBinError(i)/intergal/h->GetBinWidth(i);
+      integral+= h->GetBinContent(i);
+   }
+   for (int i=1;i<=h->GetNbinsX();i++)
+   {
+      double val = h->GetBinContent(i)/integral/h->GetBinWidth(i);
+      //double valErr = h->GetBinError(i)/integral/h->GetBinWidth(i);
       h->SetBinContent(i,val);
       //h->SetBinError(i,valErr);
    }
@@ -35,7 +41,7 @@ void normalize(TH1D *h)
   KEY: TH1D	histerr_ptave150_400;1	
 */
 
-void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
+TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
 {
    
 
@@ -51,6 +57,7 @@ void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
    
    if (isPPb && pdfSet==1) {
       // DSSZ 
+      cout <<"DSSZ"<<endl;
       if (isCT) {
             fileName = "parsed_pPbNLO/PPBCMSNEWCTD";
       } else {
@@ -66,6 +73,15 @@ void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
             fileName = "parsed_pPbNLO/PPBCMSNEWMME";
       }
       nEigenvalues = 15;
+   } else if (!isPPb) {
+      if (isCT) {
+            fileName = "parsed_ppNLO/PPCMSNEWCT";
+            nEigenvalues = 28;
+      } else {
+            fileName = "parsed_ppNLO/PPCMSNEWMM";
+	    nEigenvalues = 25;
+      }
+   
    }
    
    TFile *infData = new TFile("../outf_pPb_pp.root");
@@ -77,10 +93,18 @@ void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
    if (ptMin==115) idx=4;
    if (ptMin==150) idx=5;
    
-   TH1D *hData = (TH1D*)infData->Get(Form("hist_eta_pPb_%d",idx));
+   TH1D *hData;
+   TH1D *hDataPP;
+   if (isPPb) {
+      hData = (TH1D*)infData->Get(Form("hist_eta_pPb_%d",idx));
+   } else {
+      hData = (TH1D*)infData->Get(Form("hist_eta_pp_%d",idx));
+   }
+   hDataPP = (TH1D*)infData->Get(Form("hist_eta_pp_%d",idx));
 
-   hData->Draw();   
+   hData->Draw();  
    // read files
+   
    for (int i=0;i<=2*nEigenvalues;i++)
    {
       TFile *inf;
@@ -92,14 +116,17 @@ void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
       TH1D *h = (TH1D*)inf->Get(Form("hist_ptave%d_%d",ptMin,ptMax));
       h->SetName(Form("hist_ptave25_55_%2d",i));
       normalize(h);
+      //h->Add(hData,-1);
+   //cout <<"Data Area"<<hData->Integral(1,1000)<<" "<<h->Integral(1,1000)<<endl;;
       
-      
+      h->SetAxisRange(0,0.5,"Y");
       h->SetLineColor(kGray);
-      if(i!=0) h->Draw("same"); //else h->Draw();      
+      if(i!=0) h->Draw("hist same"); else h->Draw("hist");      
       hList.push_back(h);
    }
    
-   
+   TGraphAsymmErrors *g = new TGraphAsymmErrors;
+      
    for (int j=1;j<=hList[0]->GetNbinsX();j++) 
    {
       double deltaXp=0;
@@ -125,11 +152,13 @@ void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
       l->SetFillStyle(0);
       l->SetLineColor(4);
       l->Draw();
-      
+      cout <<hList[0]->GetBinCenter(j)<<" "<<hList[0]->GetBinContent(j)<<" "<<deltaXp<<" "<<deltaXn<<endl;
+      g->SetPoint(j-1,hList[0]->GetBinCenter(j),hList[0]->GetBinContent(j));
+      g->SetPointError(j-1,hList[0]->GetBinCenter(j)-hList[0]->GetBinLowEdge(j),-hList[0]->GetBinCenter(j)+hList[0]->GetBinLowEdge(j+1),deltaXn,deltaXp);
    }
    
    hList[0]->SetLineColor(2);
-   hList[0]->Draw("same");
+   hList[0]->Draw("hist same");
    hData->Draw("same");
-
+   return g;
 }
