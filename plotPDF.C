@@ -35,7 +35,7 @@ void normalize(TH1D *h)
   KEY: TH1D	histerr_ptave150_400;1	
 */
 
-void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2)
+void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
 {
    
 
@@ -51,12 +51,20 @@ void plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2)
    
    if (isPPb && pdfSet==1) {
       // DSSZ 
-      fileName = "parsed_pPbNLO/PPBCMSNEWMMD";
+      if (isCT) {
+            fileName = "parsed_pPbNLO/PPBCMSNEWCTD";
+      } else {
+            fileName = "parsed_pPbNLO/PPBCMSNEWMMD";
+      }
       nEigenvalues = 25;
    } else if (isPPb && pdfSet==2) {
       // EPS09
       cout <<"EPS09"<<endl;
-      fileName = "parsed_pPbNLO/PPBCMSNEWMME";
+      if (isCT) {
+            fileName = "parsed_pPbNLO/PPBCMSNEWCTE";
+      } else {
+            fileName = "parsed_pPbNLO/PPBCMSNEWMME";
+      }
       nEigenvalues = 15;
    }
    
