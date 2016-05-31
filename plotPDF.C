@@ -117,7 +117,7 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
       h->SetName(Form("hist_ptave25_55_%2d",i));
       normalize(h);
       //h->Add(hData,-1);
-   //cout <<"Data Area"<<hData->Integral(1,1000)<<" "<<h->Integral(1,1000)<<endl;;
+      //cout <<"Data Area"<<hData->Integral(1,1000)<<" "<<h->Integral(1,1000)<<endl;;
       
       h->SetAxisRange(0,0.5,"Y");
       h->SetLineColor(kGray);
@@ -149,16 +149,18 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
       deltaXn=sqrt(deltaXn);
       
       TBox *l = new TBox(hList[0]->GetBinLowEdge(j),hList[0]->GetBinContent(j)+deltaXp,hList[0]->GetBinLowEdge(j+1),hList[0]->GetBinContent(j)-deltaXn);
-      l->SetFillStyle(0);
+      l->SetFillStyle(3003);
+      l->SetFillColor(4);
       l->SetLineColor(4);
       l->Draw();
       cout <<hList[0]->GetBinCenter(j)<<" "<<hList[0]->GetBinContent(j)<<" "<<deltaXp<<" "<<deltaXn<<endl;
       g->SetPoint(j-1,hList[0]->GetBinCenter(j),hList[0]->GetBinContent(j));
       g->SetPointError(j-1,hList[0]->GetBinCenter(j)-hList[0]->GetBinLowEdge(j),-hList[0]->GetBinCenter(j)+hList[0]->GetBinLowEdge(j+1),deltaXn,deltaXp);
    }
-   
+   hList[0]->SetTitle(Form("%s,%d,%d",fileName.c_str(),ptMin,ptMax));
+   hList[0]->SetYTitle("Arbitrary Unit");
    hList[0]->SetLineColor(2);
    hList[0]->Draw("hist same");
-   hData->Draw("same");
+   //hData->Draw("same");
    return g;
 }
