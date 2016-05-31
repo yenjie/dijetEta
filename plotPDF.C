@@ -43,21 +43,27 @@ void normalize(TH1D *h)
 
 TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
 {
-   
+   // isPPb: true: pPb PDF, false: pp PDF
+   // pdfSet: only useful when isPPb
+   //         1: DSSZ        25 Eigenvalues
+   //         2: EPS09       15 Eigenvalues
+   //         3: nCT15       16 Eigenvalues
+   // isCT: 1 = CT as the pp basedline, 0 = MM as the pp baseline
+   static int count = 1;
 
-
-   TCanvas *c = new TCanvas("c","",600,600);
    
    // 00 is the central
    
    vector <TH1D*> hList;
    
    string fileName;
+   string title;
    int nEigenvalues=0;
    
    if (isPPb && pdfSet==1) {
       // DSSZ 
       cout <<"DSSZ"<<endl;
+      title = "DSSZ";
       if (isCT) {
             fileName = "parsed_pPbNLO/PPBCMSNEWCTD";
       } else {
@@ -67,17 +73,26 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
    } else if (isPPb && pdfSet==2) {
       // EPS09
       cout <<"EPS09"<<endl;
+      title = "EPS09";
       if (isCT) {
             fileName = "parsed_pPbNLO/PPBCMSNEWCTE";
       } else {
             fileName = "parsed_pPbNLO/PPBCMSNEWMME";
       }
       nEigenvalues = 15;
+   } else if (isPPb && pdfSet==3) {
+      // nCT15
+      cout <<"nCTEQ15"<<endl;
+      title = "nCTEQ15";
+      fileName = "parsed_CTQ/PPBCMSNEWCTQ";
+      nEigenvalues = 16;
    } else if (!isPPb) {
       if (isCT) {
+            title = "PPCT";
             fileName = "parsed_ppNLO/PPCMSNEWCT";
             nEigenvalues = 28;
       } else {
+            title = "PPMM";
             fileName = "parsed_ppNLO/PPCMSNEWMM";
 	    nEigenvalues = 25;
       }
@@ -102,8 +117,14 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
    }
    hDataPP = (TH1D*)infData->Get(Form("hist_eta_pp_%d",idx));
 
+   TFile *outf = new TFile(Form("plot/output-isPPb%d-%s-isCT%d-%d-%d.root",isPPb,title.c_str(),isCT,ptMin,ptMax),"recreate");
+
+   TCanvas *c = new TCanvas(Form("c%d",count),"",600,600);
+
+
    hData->Draw();  
    // read files
+
    
    for (int i=0;i<=2*nEigenvalues;i++)
    {
@@ -113,7 +134,8 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
       else inf = new TFile(Form("%s%d.out.root",fileName.c_str(),i));
 
       if (inf->IsZombie()) continue;
-      TH1D *h = (TH1D*)inf->Get(Form("hist_ptave%d_%d",ptMin,ptMax));
+      outf->cd();
+      TH1D *h = (TH1D*)inf->Get(Form("hist_ptave%d_%d",ptMin,ptMax))->Clone();
       h->SetName(Form("hist_ptave25_55_%2d",i));
       normalize(h);
       //h->Add(hData,-1);
@@ -123,6 +145,7 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
       h->SetLineColor(kGray);
       if(i!=0) h->Draw("hist same"); else h->Draw("hist");      
       hList.push_back(h);
+      inf->Close();
    }
    
    TGraphAsymmErrors *g = new TGraphAsymmErrors;
@@ -161,6 +184,71 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
    hList[0]->SetYTitle("Arbitrary Unit");
    hList[0]->SetLineColor(2);
    hList[0]->Draw("hist same");
+   c->Update();
+   c->SaveAs(Form("output/output-isPPb%d-%s-isCT%d-%d-%d.png",isPPb,title.c_str(),isCT,ptMin,ptMax));
    //hData->Draw("same");
+   g->SetName("g");
+   g->Write();
+   outf->Close();
    return g;
+}
+
+void doAll()
+{
+   // pp CT
+   plotPDF(25,55,0,1,1);
+   plotPDF(55,75,0,1,1);
+   plotPDF(75,95,0,1,1);
+   plotPDF(95,115,0,1,1);
+   plotPDF(115,150,0,1,1);
+   plotPDF(150,400,0,1,1);
+
+   // pp MM
+   plotPDF(25,55,0,1,0);
+   plotPDF(55,75,0,1,0);
+   plotPDF(75,95,0,1,0);
+   plotPDF(95,115,0,1,0);
+   plotPDF(115,150,0,1,0);
+   plotPDF(150,400,0,1,0);
+
+   // pPb DSSZ+MM
+   plotPDF(25,55,1,1,0);
+   plotPDF(55,75,1,1,0);
+   plotPDF(75,95,1,1,0);
+   plotPDF(95,115,1,1,0);
+   plotPDF(115,150,1,1,0);
+   plotPDF(150,400,1,1,0);
+
+   // pPb DSSZ+CT
+   plotPDF(25,55,1,1,1);
+   plotPDF(55,75,1,1,1);
+   plotPDF(75,95,1,1,1);
+   plotPDF(95,115,1,1,1);
+   plotPDF(115,150,1,1,1);
+   plotPDF(150,400,1,1,1);
+
+   // pPb EPS+MM
+   plotPDF(25,55,1,2,0);
+   plotPDF(55,75,1,2,0);
+   plotPDF(75,95,1,2,0);
+   plotPDF(95,115,1,2,0);
+   plotPDF(115,150,1,2,0);
+   plotPDF(150,400,1,2,0);
+
+   // pPb EPS+CT
+   plotPDF(25,55,1,2,1);
+   plotPDF(55,75,1,2,1);
+   plotPDF(75,95,1,2,1);
+   plotPDF(95,115,1,2,1);
+   plotPDF(115,150,1,2,1);
+   plotPDF(150,400,1,2,1);
+
+   // pPb nCT15
+   plotPDF(25,55,1,3,1);
+   plotPDF(55,75,1,3,1);
+   plotPDF(75,95,1,3,1);
+   plotPDF(95,115,1,3,1);
+   plotPDF(115,150,1,3,1);
+   plotPDF(150,400,1,3,1);
+
 }
