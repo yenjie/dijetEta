@@ -187,7 +187,7 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
    hList[0]->Draw("hist same");
    if (!isEmbed) {
       c->Update();
-      c->SaveAs(Form("output/output-isPPb%d-%s-isCT%d-%d-%d.png",isPPb,title.c_str(),isCT,ptMin,ptMax));
+      c->SaveAs(Form("plot/output-isPPb%d-%s-isCT%d-%d-%d.png",isPPb,title.c_str(),isCT,ptMin,ptMax));
    }
    //hData->Draw("same");
    g->SetName("g");
