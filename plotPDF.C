@@ -41,7 +41,7 @@ void normalize(TH1D *h)
   KEY: TH1D	histerr_ptave150_400;1	
 */
 
-TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0)
+TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2, int isCT=0, bool isEmbed = 0)
 {
    // isPPb: true: pPb PDF, false: pp PDF
    // pdfSet: only useful when isPPb
@@ -119,7 +119,8 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
 
    TFile *outf = new TFile(Form("plot/output-isPPb%d-%s-isCT%d-%d-%d.root",isPPb,title.c_str(),isCT,ptMin,ptMax),"recreate");
 
-   TCanvas *c = new TCanvas(Form("c%d",count),"",600,600);
+   TCanvas *c;
+   if (!isEmbed) c = new TCanvas(Form("c%d",count),"",600,600);
 
 
    hData->Draw();  
@@ -172,7 +173,7 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
       deltaXn=sqrt(deltaXn);
       
       TBox *l = new TBox(hList[0]->GetBinLowEdge(j),hList[0]->GetBinContent(j)+deltaXp,hList[0]->GetBinLowEdge(j+1),hList[0]->GetBinContent(j)-deltaXn);
-      l->SetFillStyle(3003);
+      l->SetFillStyle(3002);
       l->SetFillColor(4);
       l->SetLineColor(4);
       l->Draw();
@@ -184,13 +185,36 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
    hList[0]->SetYTitle("Arbitrary Unit");
    hList[0]->SetLineColor(2);
    hList[0]->Draw("hist same");
-   c->Update();
-   c->SaveAs(Form("output/output-isPPb%d-%s-isCT%d-%d-%d.png",isPPb,title.c_str(),isCT,ptMin,ptMax));
+   if (!isEmbed) {
+      c->Update();
+      c->SaveAs(Form("output/output-isPPb%d-%s-isCT%d-%d-%d.png",isPPb,title.c_str(),isCT,ptMin,ptMax));
+   }
    //hData->Draw("same");
    g->SetName("g");
    g->Write();
-   outf->Close();
+   //outf->Close();
    return g;
+}
+
+void plot6Panel(bool isPPb, int pdfSet, int isCT)
+{
+   TCanvas *c = new TCanvas("c","",1500,1000);
+   c->Divide(3,2);
+   c->cd(1);
+   plotPDF(25,55,isPPb,pdfSet,isCT,1);
+   c->cd(2);
+   plotPDF(55,75,isPPb,pdfSet,isCT,1);
+   c->cd(3);
+   plotPDF(75,95,isPPb,pdfSet,isCT,1);
+   c->cd(4);
+   plotPDF(95,115,isPPb,pdfSet,isCT,1);
+   c->cd(5);
+   plotPDF(115,150,isPPb,pdfSet,isCT,1);
+   c->cd(6);
+   plotPDF(150,400,isPPb,pdfSet,isCT,1);
+   
+
+   
 }
 
 void doAll()
