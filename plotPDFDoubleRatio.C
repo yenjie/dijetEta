@@ -104,7 +104,9 @@ TGraphAsymmErrors *plotPDFDoubleRatio(int ptMin=25,int ptMax=55, bool isPPb=1, i
    
    }
    
-   TFile *infData = new TFile("../outf_pPb_pp_old.root");
+//   TFile *infData = new TFile("../outf_pPb_pp_old.root");
+   TFile *infData = new TFile("../outf_pPb_pp_July4_L2Res.root");
+
    int idx=0;
    if (ptMin==25) idx=0;
    if (ptMin==55) idx=1;

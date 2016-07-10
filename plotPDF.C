@@ -86,10 +86,10 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
       title = "nCTEQ15";
       if (isCT) {
             fileName = "parsed_pPbNLO/PPBCMSNEWQCT";
-            nEigenvalues = 56;
+            nEigenvalues = 28;
       } else {
             fileName = "parsed_pPbNLO/PPBCMSNEWQMM";
-            nEigenvalues = 50;
+            nEigenvalues = 25;
       } 
    } else if (!isPPb) {
       if (isCT) {
@@ -104,7 +104,8 @@ TGraphAsymmErrors *plotPDF(int ptMin=25,int ptMax=55, bool isPPb=1, int pdfSet=2
    
    }
    
-   TFile *infData = new TFile("../outf_pPb_pp.root");
+//   TFile *infData = new TFile("../outf_pPb_pp.root");
+   TFile *infData = new TFile("../outf_pPb_pp_20160628_pPbdir.root");
    int idx=0;
    if (ptMin==25) idx=0;
    if (ptMin==55) idx=1;
